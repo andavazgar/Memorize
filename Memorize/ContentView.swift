@@ -7,64 +7,60 @@
 
 import SwiftUI
 
+struct Theme: Hashable {
+    let name: String
+    let icon: String
+    let emojis: [String]
+}
+
 struct ContentView: View {
-    @State private var emojis = ["😉", "😄", "😜", "😎"]
-    @State private var emojiCount = 2
+    let themes = [
+        Theme(name: "Vehicles", icon: "car", emojis: ["🚗", "🚙", "🚌", "🏎", "🚓", "🚑", "🚒", "🚠", "🚝", "🚀", "✈️", "🚁"]),
+        Theme(name: "Faces", icon: "face.smiling", emojis: ["😉", "😄", "😜", "😎", "😁", "😆", "😂", "🤣", "😍", "😘", "🥺", "😤", "🤯", "🥸"]),
+        Theme(name: "Flags", icon: "flag", emojis: ["🇦🇷", "🇧🇷", "🇨🇦", "🇨🇴", "🇪🇨", "🇫🇷", "🇵🇾", "🇵🇪", "🇪🇸", "🇺🇸", "🇻🇪"])
+    ]
+    @State private var currentTheme = 0
+    var emojis: [String] {
+        let listOfEmojis = themes[currentTheme].emojis
+        let numberOfCards = Int.random(in: 4...listOfEmojis.count)
+        let cardsToDisplay = listOfEmojis[0..<numberOfCards]
+        
+        return Array(cardsToDisplay).shuffled()
+    }
     
     var body: some View {
         VStack {
+            Text("Memorize!")
+                .font(.largeTitle)
+            
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))]) {
-                    ForEach(emojis[0..<emojiCount], id:\.self) { emoji in
+                    ForEach(emojis, id:\.self) { emoji in
                         CardView(content: emoji)
                     }
                 }
                 .foregroundColor(.red)
             }
             
-            Spacer()
-            
             HStack {
-                removeButton
-                Spacer()
-                shuffleButton
-                Spacer()
-                addButton
+                ForEach(0..<themes.count) { index in
+                    let theme = themes[index]
+                    
+                    Button {
+                        currentTheme = index
+                    } label: {
+                        VStack {
+                            Image(systemName: theme.icon)
+                                .font(.title)
+                            Text(theme.name)
+                        }
+                        .foregroundColor(index == currentTheme ? .red : .accentColor)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
             }
-            .font(.title)
-            .padding(.horizontal)
         }
         .padding()
-    }
-    
-    var addButton: some View {
-        Button {
-            if emojiCount < emojis.count {
-                emojiCount += 1
-            }
-        } label: {
-            Image(systemName: "plus.circle")
-        }
-        .disabled(emojiCount == emojis.count)
-        .foregroundColor(buttonColor(isDisabled: emojiCount == emojis.count))
-    }
-    
-    var removeButton: some View {
-        Button {
-            if emojiCount > 1 {
-                emojiCount -= 1
-            }
-        } label: {
-            Image(systemName: "minus.circle")
-        }
-        .disabled(emojiCount == 1)
-        .foregroundColor(buttonColor(isDisabled: emojiCount == 1))
-    }
-    
-    var shuffleButton: some View {
-        Button("Shuffle") {
-            
-        }
     }
     
     func buttonColor(isDisabled: Bool) -> Color {
@@ -104,8 +100,8 @@ struct ContentView_Previews: PreviewProvider {
             ContentView()
             ContentView()
                 .preferredColorScheme(.dark)
-            ContentView()
-                .previewInterfaceOrientation(.landscapeRight)
+//            ContentView()
+//                .previewInterfaceOrientation(.landscapeRight)
         }
     }
 }
