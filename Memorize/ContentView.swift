@@ -12,36 +12,28 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            Text("Memorize!")
+            HStack {
+                Text("Score: \(viewModel.score)")
+                Spacer()
+                Button("New Game") {
+                    viewModel.newGame()
+                }
+            }
+            .font(.title2)
+            
+            Spacer(minLength: 20)
+            
+            Text(viewModel.currentTheme.name)
                 .font(.largeTitle)
             
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))]) {
                     ForEach(viewModel.cards) { card in
-                        CardView(card: card)
+                        CardView(card: card, cardColor: viewModel.cardColor)
                             .onTapGesture {
                                 viewModel.choose(card)
                             }
                     }
-                }
-                .foregroundColor(.red)
-            }
-            
-            HStack {
-                ForEach(0..<EmojiMemoryGame.themes.count) { index in
-                    let theme = EmojiMemoryGame.themes[index]
-                    
-                    Button {
-                        viewModel.setCurrentTheme(withIndex: index)
-                    } label: {
-                        VStack {
-                            Image(systemName: theme.icon)
-                                .font(.title)
-                            Text(theme.name)
-                        }
-                        .foregroundColor(index == viewModel.currentTheme ? .red : .accentColor)
-                    }
-                    .frame(maxWidth: .infinity)
                 }
             }
         }
@@ -56,13 +48,14 @@ struct ContentView: View {
 struct CardView: View {
     @Environment(\.colorScheme) var colorScheme
     let card: MemoryGame<String>.Card
+    let cardColor: Color
     
     var body: some View {
         ZStack {
             let cardShape = RoundedRectangle(cornerRadius: 20)
             if card.isFaceUp {
                 cardShape.fill()
-                    .foregroundColor(colorScheme == .light ? .white : Color(uiColor: .lightGray))
+                    .foregroundColor(colorScheme == .light ? .white : .white.opacity(0.4))
                 cardShape.strokeBorder(lineWidth: 3)
                 
                 Text(card.content).font(.largeTitle)
@@ -70,11 +63,12 @@ struct CardView: View {
                 cardShape.opacity(0)
             } else {
                 cardShape.fill()
-                    .foregroundColor(colorScheme == .light ? .white : Color(uiColor: .lightGray))
+                    .foregroundColor(colorScheme == .light ? cardColor.opacity(0.8) : cardColor.opacity(0.6))
                 cardShape.strokeBorder(lineWidth: 3)
             }
         }
         .aspectRatio(2/3, contentMode: .fit)
+        .foregroundColor(cardColor)
     }
 }
 

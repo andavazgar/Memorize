@@ -8,48 +8,72 @@
 import SwiftUI
 
 class EmojiMemoryGame: ObservableObject {
-    struct Theme: Hashable {
-        let name: String
-        let icon: String
-        let emojis: [String]
-    }
-    
-    static let themes = [
-        Theme(name: "Vehicles", icon: "car", emojis: ["🚗", "🚙", "🚌", "🏎", "🚓", "🚑", "🚒", "🚠", "🚝", "🚀", "✈️", "🚁"]),
-        Theme(name: "Faces", icon: "face.smiling", emojis: ["😉", "😄", "😜", "😎", "😁", "😆", "😂", "🤣", "😍", "😘", "🥺", "😤", "🤯", "🥸"]),
-        Theme(name: "Flags", icon: "flag", emojis: ["🇦🇷", "🇧🇷", "🇨🇦", "🇨🇴", "🇪🇨", "🇫🇷", "🇵🇾", "🇵🇪", "🇪🇸", "🇺🇸", "🇻🇪"])
+    private static let themes = [
+        Theme(name: "Vehicles", emojis: ["🚗", "🚙", "🚌", "🏎", "🚓", "🚑", "🚒", "🚠", "🚝", "🚀", "✈️", "🚁"], numberOfPairs: 10, color: "red"),
+        Theme(name: "Faces", emojis: ["😉", "😄", "😜", "😎", "😁", "😆", "😂", "🤣", "😍", "😘", "🥺", "😤", "🤯", "🥸"], numberOfPairs: 14, color: "orange"),
+        Theme(name: "Flags", emojis: ["🇦🇷", "🇧🇷", "🇨🇦", "🇨🇴", "🇪🇨", "🇫🇷", "🇵🇾", "🇵🇪", "🇪🇸", "🇺🇸", "🇻🇪"], numberOfPairs: 8, color: "blue"),
+        Theme(name: "Sports", emojis: ["⚽️", "🏀", "🏈", "⚾️", "🎾", "🏐", "🏓", "🎱", "🥏", "🥋", "🥊"], numberOfPairs: 10, color: "purple"),
+        Theme(name: "Music", emojis: ["🎧", "🎼", "🎹", "🥁", "🎷", "🎺", "🪗", "🎸", "🎻", "🎤"], numberOfPairs: 10, color: "green"),
+        Theme(name: "Electronics", emojis: ["⌚️", "📱", "💻", "🖥", "🖨", "📷", "📹", "📺", "📻", "📽", "🎥"], numberOfPairs: 11, color: "fuchsia")
     ]
     
     @Published private var model: MemoryGame<String>
-    private(set) var currentTheme: Int {
+    private var currentThemeIndex: Int {
         didSet {
-            model = EmojiMemoryGame.createMemoryGame(withThemeIndex: currentTheme)
+            model = EmojiMemoryGame.createMemoryGame(withTheme: currentTheme)
         }
+    }
+    var currentTheme: Theme {
+        EmojiMemoryGame.themes[currentThemeIndex]
     }
     var cards: [MemoryGame<String>.Card] {
         model.cards
     }
-    
-    init() {
-        self.currentTheme = 0
-        self.model = EmojiMemoryGame.createMemoryGame(withThemeIndex: currentTheme)
+    var score: Int {
+        model.score
     }
-    
-    static func createMemoryGame(withThemeIndex themeIndex: Int) -> MemoryGame<String> {
-        MemoryGame<String>(numberOfPairsOfCards: 4) { pairIndex in
-            EmojiMemoryGame.themes[themeIndex].emojis[pairIndex]
+    var cardColor: Color {
+        switch currentTheme.color {
+        case "blue":
+            return .blue
+        case "green":
+            return .green
+        case "orange":
+            return .orange
+        case "purple":
+            return .purple
+        default:
+            return .red
         }
     }
+    
+    init() {
+        self.currentThemeIndex = Int.random(in: EmojiMemoryGame.themes.indices)
+        self.model = EmojiMemoryGame.createMemoryGame(withTheme: EmojiMemoryGame.themes[currentThemeIndex])
+    }
+    
+    private static func createMemoryGame(withTheme theme: Theme) -> MemoryGame<String> {
+        var emojis = theme.emojis
+        let numberOfPairs = theme.numberOfPairs > theme.emojis.count ? theme.emojis.count : theme.numberOfPairs
+        return MemoryGame<String>(numberOfPairsOfCards: numberOfPairs) { _ in
+            let emojiIndex = Int.random(in: emojis.indices)
+            emojis.remove(at: emojiIndex)
+            return theme.emojis[emojiIndex]
+        }
+    }
+    
+    
     
     // MARK: - Intents
     
-    func setCurrentTheme(withIndex index: Int) {
-        if (0..<EmojiMemoryGame.themes.count).contains(index) {
-            currentTheme = index
-        }
-    }
-    
     func choose(_ card: MemoryGame<String>.Card) {
         model.choose(card)
+    }
+    
+    func newGame() {
+        var rangeOfThemeIndices = Array(EmojiMemoryGame.themes.indices)
+        rangeOfThemeIndices.remove(at: currentThemeIndex)
+        
+        currentThemeIndex = rangeOfThemeIndices.randomElement() ?? 0
     }
 }
