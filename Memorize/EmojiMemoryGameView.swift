@@ -26,15 +26,12 @@ struct EmojiMemoryGameView: View {
             Text(game.currentTheme.name)
                 .font(.largeTitle)
             
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))]) {
-                    ForEach(game.cards) { card in
-                        CardView(card, color: game.cardColor)
-                            .onTapGesture {
-                                game.choose(card)
-                            }
+            AspectVGrid(items: game.cards, aspectRatio: 2/3) { card in
+                CardView(card, color: game.cardColor)
+                    .padding(4)
+                    .onTapGesture {
+                        game.choose(card)
                     }
-                }
             }
         }
         .padding()
@@ -65,6 +62,10 @@ struct CardView: View {
                         .foregroundColor(colorScheme == .light ? .white : .white.opacity(0.4))
                     cardShape.strokeBorder(lineWidth: DrawingConstants.lineWidth)
                     
+                    Pie(startAngle: .degrees(0), endAngle: .degrees(110), clockwise: false)
+                        .padding(DrawingConstants.pie.padding)
+                        .opacity(DrawingConstants.pie.opacity)
+                    
                     Text(card.content)
                         .font(.system(size: fontSize(for: geometry.size)))
                 } else if card.isMatched {
@@ -76,7 +77,6 @@ struct CardView: View {
                 }
             }
         }
-        .aspectRatio(2/3, contentMode: .fit)
         .foregroundColor(cardColor)
     }
     
@@ -85,17 +85,22 @@ struct CardView: View {
     }
     
     private struct DrawingConstants {
-        static let cornerRadius: CGFloat = 20
+        static let cornerRadius: CGFloat = 10
         static let fontScale: CGFloat = 0.7
         static let lineWidth: CGFloat = 3
+        static let pie = (padding: 5.0, opacity: 0.5)
     }
 }
 
 struct EmojiMemoryGameView_Previews: PreviewProvider {
     static var previews: some View {
         let game = EmojiMemoryGame()
+        let _: Void = game.choose(game.cards[0])
         
         Group {
+            CardView(game.cards[0], color: game.cardColor)
+                .previewLayout(.fixed(width: 200, height: 300))
+            
             EmojiMemoryGameView(game: game)
             EmojiMemoryGameView(game: game)
                 .preferredColorScheme(.dark)
