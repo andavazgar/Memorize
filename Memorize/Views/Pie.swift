@@ -13,6 +13,11 @@ struct Pie: Shape {
     var endAngle: Angle
     let clockwise: Bool
     
+    var animatableData: Double {
+        get { endAngle.degrees }
+        set { endAngle = .degrees(newValue) }
+    }
+    
     init(origin: PieOriginLocation = .top, startAngle: Angle, endAngle: Angle, clockwise: Bool = true) {
         self.origin = origin
         self.startAngle = startAngle + origin.rotationAdjustment

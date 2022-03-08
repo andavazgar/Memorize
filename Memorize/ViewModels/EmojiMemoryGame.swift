@@ -74,7 +74,10 @@ class EmojiMemoryGame: ObservableObject {
     func newGame() {
         var rangeOfThemeIndices = Array(EmojiMemoryGame.themes.indices)
         rangeOfThemeIndices.remove(at: currentThemeIndex)
-        
         currentThemeIndex = rangeOfThemeIndices.randomElement() ?? 0
+    }
+    
+    func shuffleCards() {
+        model.shuffleCards()
     }
 }
