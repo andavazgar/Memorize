@@ -14,6 +14,10 @@ struct EmojiMemoryGameView: View {
     @Namespace private var dealingNamespace
     @State private var dealtCards = Set<Int>()
     
+    init(game: EmojiMemoryGame) {
+        self.game = game
+    }
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack {
@@ -25,27 +29,32 @@ struct EmojiMemoryGameView: View {
             
             deckOfCards
         }
+        .navigationTitle(game.theme.name)
+        .toolbar {
+            Button("New Game") {
+                withAnimation {
+                    dealtCards = []
+                    game.newGame()
+                }
+            }
+        }
+        .onAppear {
+            // Don't deal the cards. They have already been dealt.
+            if(game.isGameInProgress) {
+                game.cards.forEach { dealCard($0) }
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    game.isGameInProgress = true
+                    dealDeckOfCards()
+                }
+            }
+        }
     }
     
     // MARK: - Views
     private var header: some View {
-        VStack {
-            HStack {
-                Text("Score: \(game.score)")
-                Spacer()
-                Button("New Game") {
-                    withAnimation {
-                        dealtCards = []
-                        game.newGame()
-                    }
-                }
-            }
+        Text("Score: \(game.score)")
             .font(.title2)
-            .padding(.bottom)
-            
-            Text(game.currentTheme.name)
-                .font(.largeTitle)
-        }
     }
     
     private var gameBody: some View {
@@ -65,7 +74,7 @@ struct EmojiMemoryGameView: View {
                     }
             }
         }
-        .foregroundColor(game.cardColor)
+        .foregroundColor(game.theme.uiColor)
     }
     
     private var shuffleButton: some View {
@@ -88,21 +97,21 @@ struct EmojiMemoryGameView: View {
             }
         }
         .frame(width: CardConstants.widthOfDeckCards, height: CardConstants.heightOfDeckCards)
-        .foregroundColor(game.cardColor)
-        .onTapGesture {
-            // deal cards
-            for card in game.cards {
-                withAnimation(dealAnimation(for: card)) {
-                    dealCard(card)
-                }
-            }
-        }
+        .foregroundColor(game.theme.uiColor)
     }
     
     
     // MARK: - Methods
     private func dealCard(_ card: Card) {
         dealtCards.insert(card.id)
+    }
+    
+    private func dealDeckOfCards() {
+        for card in game.cards {
+            withAnimation(dealAnimation(for: card)) {
+                dealCard(card)
+            }
+        }
     }
     
     private func isInDeck(_ card: Card) -> Bool {
@@ -139,13 +148,17 @@ struct EmojiMemoryGameView: View {
 
 struct EmojiMemoryGameView_Previews: PreviewProvider {
     static var previews: some View {
-        let game = EmojiMemoryGame()
+        let game = EmojiMemoryGame(theme: ThemeStore().themes[0])
         let _: Void = game.choose(game.cards[0])
         
         Group {
-            EmojiMemoryGameView(game: game)
-            EmojiMemoryGameView(game: game)
-                .preferredColorScheme(.dark)
+            NavigationView {
+                EmojiMemoryGameView(game: game)
+            }
+            NavigationView {
+                EmojiMemoryGameView(game: game)
+            }
+            .preferredColorScheme(.dark)
         }
     }
 }

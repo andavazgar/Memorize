@@ -7,9 +7,10 @@
 
 import Foundation
 
-struct Theme: Hashable {
-    let name: String
-    let emojis: [String]
+struct Theme: Codable, Hashable, Identifiable {
+    private(set) var id = UUID().uuidString
+    var name: String
+    var emojis: [String]
     var numberOfPairs: Int
-    let color: String
+    var color: RGBAColor
 }
