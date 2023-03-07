@@ -33,3 +33,7 @@ Assignments 1, 2 & 6 for [Stanford University's course CS193p](https://cs193p.si
 
 ## Screenshots
 ![Screenshots](Demo/Thumbnails.png)
+
+
+## Preview
+<img src="Demo/Preview.gif" alt="App Preview" width="50%">
